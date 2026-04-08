@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Loan Predictor | AI Edition</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        /* CSS Variables for Light/Dark Mode Switching */
+        :root {
+            --bg-grad-1: #e0eafc;
+            --bg-grad-2: #cfdef3;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --text-color: #1e293b;
+            --input-bg: rgba(255, 255, 255, 0.9);
+            --input-border: rgba(203, 213, 225, 0.8);
+            --bubble-color: rgba(59, 130, 246, 0.2);
+            --footer-text: #64748b;
+        }
+
+        [data-theme="dark"] {
+            --bg-grad-1: #0f172a;
+            --bg-grad-2: #1e293b;
+            --card-bg: rgba(30, 41, 59, 0.75);
+            --text-color: #f8fafc;
+            --input-bg: rgba(15, 23, 42, 0.7);
+            --input-border: rgba(51, 65, 85, 0.8);
+            --bubble-color: rgba(56, 189, 248, 0.15);
+            --footer-text: #94a3b8;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
+            color: var(--text-color);
+            transition: background 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background Container */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        /* Floating Bubbles Style */
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--bubble-color);
+            backdrop-filter: blur(5px);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.1);
+            transition: left 0.3s ease-out, top 0.3s ease-out, background 0.5s ease;
+        }
+        
+        /* Glassmorphism Card Style */
+        .card { 
+            border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 20px; 
+            background: var(--card-bg); 
+            backdrop-filter: blur(15px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2); 
+            overflow: hidden;
+            transition: background 0.5s ease;
+        }
+
+        .header-bg { 
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(23, 37, 84, 0.9) 100%); 
+            color: white; 
+            padding: 35px 20px; 
+            text-align: center; 
+        }
+
+        /* Buttons styling */
+        .btn-primary { 
+            background: linear-gradient(to right, #1e3a8a, #3b82f6); 
+            border: none; 
+            padding: 12px; 
+            font-weight: bold; 
+            transition: all 0.3s ease; 
+            color: white;
+        }
+        .btn-primary:hover { 
+            background: linear-gradient(to right, #172a6b, #2563eb); 
+            transform: translateY(-3px); 
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+            color: white;
+        }
+        .btn-outline-danger {
+            padding: 12px;
+            font-weight: bold;
+            border-width: 2px;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-danger:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Input styling */
+        .form-label {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 10px 15px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+            background: var(--input-bg);
+            color: var(--text-color);
+        }
+        /* Dropdown options fix for dark mode */
+        option { background: var(--bg-grad-2); color: var(--text-color); }
+
+        /* Theme Toggle Button */
+        #theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-color);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #theme-toggle:hover {
+            transform: rotate(30deg) scale(1.1);
+        }
+
+        /* Result Box */
+        .result-box { 
+            border-radius: 12px; 
+            padding: 20px; 
+            text-align: center; 
+            font-size: 22px; 
+            font-weight: bold; 
+            margin-top: 30px; 
+            animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        
+        @keyframes bounceIn { 
+            0% { opacity: 0; transform: scale(0.8) translateY(20px); } 
+            100% { opacity: 1; transform: scale(1) translateY(0); } 
+        }
+    </style>
+</head>
+<body>
+
+<button id="theme-toggle" title="Toggle Dark/Light Mode">
+    <i class="bi bi-moon-stars-fill" id="theme-icon"></i>
+</button>
+
+<div class="bg-animation" id="bg-container"></div>
+
+<div class="container py-5 position-relative" style="z-index: 1;">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            
+            <div class="card">
+                <div class="header-bg">
+                    <h2 class="fw-bold mb-2"><i class="bi bi-robot"></i> Smart Loan AI</h2>
+                    <p class="mb-0 opacity-75">Instant Eligibility Check Powered by Neural Networks</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label"><i class="bi bi-person-fill text-primary"></i> Gender</label>
+                                <select class="form-select" name="Gender">
+                                    <option value="1">Male</option>
+                                    <option value="0">Female</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label"><i class="bi bi-people-fill text-primary"></i> Married</label>
+                                <select class="form-select" name="Married">
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label"><i class="bi bi-diagram-3-fill text-primary"></i> Dependents</label>
+                                <select class="form-select" name="Dependents">
+                                    <option value="0">None</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3+</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label"><i class="bi bi-mortarboard-fill text-primary"></i> Education</label>
+                                <select class="form-select" name="Education">
+                                    <option value="0">Graduate</option>
+                                    <option value="1">Not Graduate</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label"><i class="bi bi-cash-stack text-success"></i> Applicant Monthly Income (₹)</label>
+                                <input type="number" class="form-control" name="ApplicantIncome" placeholder="e.g. 50000" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label"><i class="bi bi-piggy-bank-fill text-warning"></i> Loan Amount (in Thousands ₹)</label>
+                                <input type="number" class="form-control" name="LoanAmount" placeholder="e.g. 1500" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label"><i class="bi bi-shield-check text-info"></i> Credit History</label>
+                                <select class="form-select" name="Credit_History">
+                                    <option value="1">Good (Cleared past debts)</option>
+                                    <option value="0">Bad (Defaulted before)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label"><i class="bi bi-building text-secondary"></i> Property Area</label>
+                                <select class="form-select" name="Property_Area">
+                                    <option value="2">Urban</option>
+                                    <option value="1">Semi-Urban</option>
+                                    <option value="0">Rural</option>
+                                </select>
+                            </div>
+                            
+                            <input type="hidden" name="Self_Employed" value="0">
+                            <input type="hidden" name="CoapplicantIncome" value="0">
+                            <input type="hidden" name="Loan_Amount_Term" value="360">
+                        </div>
+
+                        <div class="d-flex gap-3 mt-5">
+                            <button type="submit" class="btn btn-primary flex-grow-1 fs-5"><i class="bi bi-lightning-charge-fill"></i> Analyze Eligibility</button>
+                            <a href="/" class="btn btn-outline-danger d-flex align-items-center px-4"><i class="bi bi-arrow-clockwise me-2"></i> Reset</a>
+                        </div>
+                    </form>
+
+                    {% if result %}
+                    <div class="result-box 
+                        {% if status == 'success' %}bg-success-subtle text-success border border-2 border-success
+                        {% elif status == 'fail' %}bg-danger-subtle text-danger border border-2 border-danger
+                        {% else %}bg-warning-subtle text-dark border border-2 border-warning{% endif %}">
+                        {{ result }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <p class="text-center mt-4 fw-bold" style="color: var(--footer-text);">
+                &copy; 2026 Smart Loan System | Designed for Nilesh Projects
+            </p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script>
+    // --- 1. THEME TOGGLE LOGIC ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    const htmlElement = document.documentElement;
+
+    themeToggleBtn.addEventListener('click', () => {
+        if (htmlElement.getAttribute('data-theme') === 'dark') {
+            htmlElement.setAttribute('data-theme', 'light');
+            themeIcon.className = 'bi bi-brightness-high-fill text-warning';
+        } else {
+            htmlElement.setAttribute('data-theme', 'dark');
+            themeIcon.className = 'bi bi-moon-stars-fill text-info';
+        }
+    });
+
+    // --- 2. ANIMATED BUBBLES & MOUSE DODGE LOGIC ---
+    const container = document.getElementById('bg-container');
+    const shapeCount = 20; 
+    const shapes = [];
+
+    // Screen size limits
+    const screenW = window.innerWidth;
+    const screenH = window.innerHeight;
+
+    for (let i = 0; i < shapeCount; i++) {
+        let shape = document.createElement('div');
+        shape.classList.add('shape');
+        
+        let size = Math.random() * 80 + 40; 
+        shape.style.width = size + 'px';
+        shape.style.height = size + 'px';
+        
+        // Save initial base positions in pixels
+        let baseX = Math.random() * screenW;
+        let baseY = Math.random() * screenH;
+        
+        shape.dataset.baseX = baseX;
+        shape.dataset.baseY = baseY;
+        shape.style.left = baseX + 'px';
+        shape.style.top = baseY + 'px';
+        
+        container.appendChild(shape);
+        shapes.push(shape);
+    }
+
+    // Main background continuous animation
+    anime({
+        targets: '.shape',
+        translateX: function() { return anime.random(-200, 200); }, 
+        translateY: function() { return anime.random(-200, 200); }, 
+        scale: function() { return anime.random(0.8, 1.2); },       
+        duration: function() { return anime.random(5000, 10000); },  
+        easing: 'easeInOutSine',
+        direction: 'alternate',
+        loop: true
+    });
+
+    // Mouse Dodge Effect
+    document.addEventListener('mousemove', (e) => {
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+        const dodgeRadius = 150; // Kitni door se bhagenge
+
+        shapes.forEach(shape => {
+            const rect = shape.getBoundingClientRect();
+            // Calculate shape center
+            const shapeX = rect.left + (rect.width / 2);
+            const shapeY = rect.top + (rect.height / 2);
+            
+            // Math magic for distance and angle
+            const dx = shapeX - mouseX;
+            const dy = shapeY - mouseY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < dodgeRadius) {
+                // Agar mouse paas aaya, toh angle nikal ke door push karo
+                const angle = Math.atan2(dy, dx);
+                const pushStrength = dodgeRadius - distance; // Jitna paas, utna tez push
+                
+                const newLeft = parseFloat(shape.dataset.baseX) + (Math.cos(angle) * pushStrength * 2);
+                const newTop = parseFloat(shape.dataset.baseY) + (Math.sin(angle) * pushStrength * 2);
+                
+                shape.style.left = newLeft + 'px';
+                shape.style.top = newTop + 'px';
+            } else {
+                // Agar mouse door gaya, toh wapas apni base position pe aao
+                shape.style.left = shape.dataset.baseX + 'px';
+                shape.style.top = shape.dataset.baseY + 'px';
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
