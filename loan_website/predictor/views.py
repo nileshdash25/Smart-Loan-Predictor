@@ -1,23 +1,27 @@
 from django.shortcuts import render
 import joblib
-from tensorflow.keras.models import load_model
 import os
+import numpy as np
+import tflite_runtime.interpreter as tflite # Naya halka engine
 
-# Model aur Scaler ka path set kar rahe hain
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-model_path = os.path.join(BASE_DIR, 'predictor', 'ml_files', 'loan_model.keras')
+# Ab .keras ki jagah .tflite load kar rahe hain
+model_path = os.path.join(BASE_DIR, 'predictor', 'ml_files', 'loan_model.tflite')
 scaler_path = os.path.join(BASE_DIR, 'predictor', 'ml_files', 'scaler.pkl')
 
-# Model aur Scaler load karna
-model = load_model(model_path)
 scaler = joblib.load(scaler_path)
+
+# TFLite Interpreter setup
+interpreter = tflite.Interpreter(model_path=model_path)
+interpreter.allocate_tensors()
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
 
 def home(request):
     result = None
-    status = None # Naya variable status track karne ke liye
+    status = None 
     
     if request.method == 'POST':
-        # Pehle check karo ki saare fields bhare hain ya nahi
         income = request.POST.get('ApplicantIncome')
         loan = request.POST.get('LoanAmount')
         
@@ -41,7 +45,12 @@ def home(request):
                 ]
                 
                 final_features = scaler.transform([features])
-                prediction = model.predict(final_features)
+                input_data = np.array(final_features, dtype=np.float32) # TFLite ko float32 chahiye
+                
+                # Prediction with TFLite
+                interpreter.set_tensor(input_details[0]['index'], input_data)
+                interpreter.invoke()
+                prediction = interpreter.get_tensor(output_details[0]['index'])
                 
                 if prediction[0][0] > 0.5:
                     result = "🥳 Congratulations! Your Loan is APPROVED."
