@@ -1,5 +1,5 @@
 django
-tensorflow
+tensorflow-cpu
 joblib
 scikit-learn
 gunicorn
